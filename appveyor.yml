@@ -1,0 +1,88 @@
+environment:
+  matrix:
+    - PYTHON: "C:\\Python27"
+      PYTHON_ARCH: "32"
+      OPENSSL_LIB: "openssl-1.0.2k-vs2008"
+
+    - PYTHON: "C:\\Python33"
+      PYTHON_ARCH: "32"
+      OPENSSL_LIB: "openssl-1.0.2k-vs2010"
+
+    - PYTHON: "C:\\Python34"
+      PYTHON_ARCH: "32"
+      OPENSSL_LIB: "openssl-1.0.2k-vs2010"
+
+    - PYTHON: "C:\\Python35"
+      PYTHON_ARCH: "32"
+      OPENSSL_LIB: "openssl-1.0.2k-vs2015"
+
+    - PYTHON: "C:\\Python36"
+      PYTHON_ARCH: "32"
+      OPENSSL_LIB: "openssl-1.0.2k-vs2015"
+
+    - PYTHON: "C:\\Python27-x64"
+      PYTHON_ARCH: "64"
+      OPENSSL_LIB: "openssl-1.0.2k-vs2008"
+
+    - PYTHON: "C:\\Python33-x64"
+      PYTHON_ARCH: "64"
+      OPENSSL_LIB: "openssl-1.0.2k-vs2010"
+      DISTUTILS_USE_SDK: "1"
+
+    - PYTHON: "C:\\Python34-x64"
+      PYTHON_ARCH: "64"
+      OPENSSL_LIB: "openssl-1.0.2k-vs2010"
+      DISTUTILS_USE_SDK: "1"
+
+    - PYTHON: "C:\\Python35-x64"
+      PYTHON_ARCH: "64"
+      OPENSSL_LIB: "openssl-1.0.2k-vs2015"
+
+    - PYTHON: "C:\\Python36-x64"
+      PYTHON_ARCH: "64"
+      OPENSSL_LIB: "openssl-1.0.2k-vs2015"
+
+install:
+  - "%PYTHON%\\python.exe -m pip install wheel"
+
+  - cd ..
+  - ps: Invoke-WebRequest "https://www.npcglib.org/~stathis/downloads/$env:OPENSSL_LIB.7z" -OutFile "openssl.7z"
+  - 7z x openssl.7z
+  - cd sslpsk
+
+  - ps: >-
+      If ($env:PYTHON_ARCH -Match "32") {
+        $env:OPENSSL_BIN_DIR="bin"
+        $env:OPENSSL_LIB_DIR="lib"
+        $env:OPENSSL_INCLUDE_DIR="include"
+      } Else {
+        $env:OPENSSL_BIN_DIR="bin64"
+        $env:OPENSSL_LIB_DIR="lib64"
+        $env:OPENSSL_INCLUDE_DIR="include64"
+      }
+
+  - mkdir openssl
+  - mklink /D openssl\bin     ..\..\%OPENSSL_LIB%\%OPENSSL_BIN_DIR%
+  - mklink /D openssl\lib     ..\..\%OPENSSL_LIB%\%OPENSSL_LIB_DIR%
+  - mklink /D openssl\include ..\..\%OPENSSL_LIB%\%OPENSSL_INCLUDE_DIR%
+
+build_script:
+  - "appveyor\\build.cmd %PYTHON%\\python.exe setup.py build_ext
+     -Iopenssl/include
+     -Lopenssl/lib"
+  - "appveyor\\build.cmd %PYTHON%\\python.exe setup.py build"
+
+after_build:
+  - "appveyor\\build.cmd %PYTHON%\\python.exe setup.py install"
+
+test_script:
+  - cd openssl
+  - "%PYTHON%\\python.exe -m sslpsk.test"
+  - cd ..
+
+after_test:
+  - "appveyor\\build.cmd %PYTHON%\\python.exe setup.py bdist"
+  - "appveyor\\build.cmd %PYTHON%\\python.exe setup.py bdist_wheel"
+
+artifacts:
+  - path: dist\*

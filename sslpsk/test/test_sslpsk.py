@@ -86,7 +86,7 @@ class SSLPSKTest(unittest.TestCase):
         self.assertTrue(data == TEST_DATA.upper(), 'Test Failed')
 
 def main():
-    unittest.main()
+    unittest.main(buffer=False)
 
 if __name__ == '__main__':
     main()

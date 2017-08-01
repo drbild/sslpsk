@@ -12,10 +12,13 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License
 
+from __future__ import absolute_import
+
 import ssl
-import _sslpsk
 import sys
 import weakref
+
+from sslpsk import _sslpsk
 
 _callbacks = {}
 

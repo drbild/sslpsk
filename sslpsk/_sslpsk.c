@@ -107,6 +107,15 @@ static unsigned int sslpsk_psk_client_callback(SSL* ssl,
     int ret = 0;
 
     PyGILState_STATE gstate;
+
+    PyObject* result;
+
+    const char* psk_;
+    const char* identity_;
+
+    Py_ssize_t psk_len_;
+    Py_ssize_t identity_len_;
+    
     gstate = PyGILState_Ensure();
 
     if (python_psk_client_callback == NULL) {
@@ -114,17 +123,12 @@ static unsigned int sslpsk_psk_client_callback(SSL* ssl,
     }
 
     // Call python callback
-    PyObject* result = PyObject_CallFunction(python_psk_client_callback, "ls", ssl_id(ssl), hint);
+    result = PyObject_CallFunction(python_psk_client_callback, "ls", ssl_id(ssl), hint);
     if (result == NULL) {
 	goto release;
     }
 
     // Parse result
-    char* psk_;
-    char* identity_;
-
-    Py_ssize_t psk_len_;
-    Py_ssize_t identity_len_;
     
     if (!PyArg_Parse(result, "(s#s#)", &psk_, &psk_len_, &identity_, &identity_len_)) {
 	goto decref;
@@ -161,37 +165,47 @@ static unsigned int sslpsk_psk_server_callback(SSL* ssl,
 					    unsigned char* psk,
 					    unsigned int max_psk_len)
 {
+    int ret = 0;
+
     PyGILState_STATE gstate;
+
+    PyObject* result;
+
+    const char* psk_;
+    Py_ssize_t psk_len_;
+
     gstate = PyGILState_Ensure();
 
     if (python_psk_server_callback == NULL) {
-        return 0;
+	goto release;
     }
 
     // Call python callback
-    PyObject* result = PyObject_CallFunction(python_psk_server_callback, "ls", ssl_id(ssl), identity);
+    result = PyObject_CallFunction(python_psk_server_callback, "ls", ssl_id(ssl), identity);
     if (result == NULL) {
-        return 0;
+	goto release;
     }
 
     // Parse result
-    const char* psk_;
-    Py_ssize_t psk_len_;
-    
     if (!PyArg_Parse(result, "s#", &psk_, &psk_len_)) {
-        return 0;
+	goto decref;
     }
 
     // Copy to caller
     if (psk_len_ > max_psk_len) {
-        return 0;
+	goto decref;
     }
     memcpy(psk, psk_, psk_len_);
+
+    ret = psk_len_;
     
+ decref:
     Py_DECREF(result);
+
+ release:
     PyGILState_Release(gstate);
 
-    return psk_len_;
+    return ret;
 }
 
 /*
@@ -200,12 +214,14 @@ static unsigned int sslpsk_psk_server_callback(SSL* ssl,
 PyObject* sslpsk_set_psk_client_callback(PyObject* self, PyObject* args)
 {
     PyObject* socket;
+    SSL* ssl;
+    
     if (!PyArg_ParseTuple(args, "O", &socket))
     {
         return NULL;
     }
 
-    SSL* ssl = ((PySSLSocket*) socket)->ssl;
+    ssl = ((PySSLSocket*) socket)->ssl;
     SSL_set_psk_client_callback(ssl, sslpsk_psk_client_callback);
 
     return Py_BuildValue("l", ssl_id(ssl));
@@ -217,12 +233,14 @@ PyObject* sslpsk_set_psk_client_callback(PyObject* self, PyObject* args)
 PyObject* sslpsk_set_psk_server_callback(PyObject* self, PyObject* args)
 {
     PyObject* socket;
+    SSL* ssl;
+
     if (!PyArg_ParseTuple(args, "O", &socket))
     {
         return NULL;
     }
 
-    SSL* ssl = ((PySSLSocket*) socket)->ssl;
+    ssl = ((PySSLSocket*) socket)->ssl;
     SSL_set_psk_server_callback(ssl, sslpsk_psk_server_callback);
 
     return Py_BuildValue("l", ssl_id(ssl));
@@ -235,12 +253,14 @@ PyObject* sslpsk_use_psk_identity_hint(PyObject* self, PyObject* args)
 {
     PyObject* socket;
     const char *hint;
+    SSL* ssl;
+
     if (!PyArg_ParseTuple(args, "Os", &socket, &hint))
     {
         return NULL;
     }
 
-    SSL* ssl = ((PySSLSocket*) socket) ->ssl;
+    ssl = ((PySSLSocket*) socket) ->ssl;
     SSL_use_psk_identity_hint(ssl, hint);
 
     return Py_BuildValue("l", ssl_id(ssl));
@@ -252,12 +272,14 @@ PyObject* sslpsk_use_psk_identity_hint(PyObject* self, PyObject* args)
 PyObject* sslpsk_set_accept_state(PyObject* self, PyObject* args)
 {
     PyObject* socket;
+    SSL* ssl;
+
     if (!PyArg_ParseTuple(args, "O", &socket))
     {
         return NULL;
     }
 
-    SSL* ssl = ((PySSLSocket*) socket) ->ssl;
+    ssl = ((PySSLSocket*) socket) ->ssl;
     SSL_set_accept_state(ssl);
 
     return Py_BuildValue("l", ssl_id(ssl));

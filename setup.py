@@ -14,11 +14,20 @@
 
 from setuptools import setup, Extension
 
-_sslpsk = Extension('_sslpsk',
-                    sources = ['_sslpsk.c'],
-                    libraries = ['ssl']
-)
+import sys
 
+if sys.platform == 'win32':
+    LIB_NAMES = ['ssleay32MD', 'libeay32MD']
+    LIB_FILES = ['openssl/bin/%s.dll'%lib for lib in LIB_NAMES]
+else:
+    LIB_NAMES = ['ssl']
+    LIB_FILES = []
+
+_sslpsk = Extension('sslpsk._sslpsk',
+                    sources = ['sslpsk/_sslpsk.c'],
+                    libraries = LIB_NAMES
+)
+            
 setup(
     name = 'sslpsk',
     version = '0.1',
@@ -43,9 +52,12 @@ setup(
         'Programming Language :: Python :: Implementation :: CPython',
         'Operating System :: POSIX',
         'Operating System :: Unix',
-        'Operating System :: MacOS'
+        'Operating System :: MacOS',
+        'Operating System :: Microsoft'
     ],
-    py_modules = ['sslpsk'],
+    packages = ['sslpsk', 'sslpsk.test'],
     ext_modules = [_sslpsk],
-    test_suite = 'tests'
+    data_files = [('sslpsk', LIB_FILES)],
+    test_suite = 'sslpsk.test',
+    zip_safe = False
 )

@@ -1,0 +1,28 @@
+language: python
+
+env: PYTHON_BIN=python
+
+matrix:
+  include:
+    - os: linux
+      python: 2.7
+    - os: linux
+      python: 3.2
+    - os: linux
+      python: 3.3
+    - os: linux
+      python: 3.4
+    - os: linux
+      python: 3.5
+    - os: linux
+      python: 3.6
+    - os: linux
+      python: 3.7-dev
+    - os: osx
+      language: generic
+      env: PYTHON_BIN=python2
+
+script:
+  - $PYTHON_BIN setup.py install
+  - cd ..
+  - $PYTHON_BIN -m sslpsk.test

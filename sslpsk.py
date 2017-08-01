@@ -48,7 +48,7 @@ def _sslobj(sock):
 
     """
     pass
-    if sys.version_info >= (3, 6):
+    if sys.version_info >= (3, 5):
         return sock._sslobj._sslobj
     else:
         return sock._sslobj

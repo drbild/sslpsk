@@ -1,5 +1,9 @@
 # sslpsk
 
+[![PyPI version](https://badge.fury.io/py/sslpsk.svg)](https://badge.fury.io/py/sslpsk)
+[![Build Status](https://travis-ci.org/drbild/sslpsk.svg?branch=master)](https://travis-ci.org/drbild/sslpsk)
+[![Build Status](https://ci.appveyor.com/api/projects/status/github/drbild/sslpsk?branch=master)](https://ci.appveyor.com/project/drbild/sslpsk)
+
 This module adds TLS-PSK support to the Python 2.7 and 3.x `ssl`
 package. Simply use
 

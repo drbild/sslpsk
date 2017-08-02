@@ -159,8 +159,11 @@ def __name__ == '__main__':
 
 ## Changelog
 
-+ 0.1.0 (August 31, 2017)
++ 0.1.0 (July 31, 2017)
   + initial release
++ 1.0.0 (August 2, 2017)
+  + include tests in pip distribution
+  + add support for Windows
 
 ## Acknowledgments
 

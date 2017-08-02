@@ -25,6 +25,7 @@ setup(
     description = 'Adds TLS-PSK support to the Python ssl package',
     author = 'David R. Bild',
     author_email = 'david@davidbild.org',
+    license="Apache 2.0",
     url = 'https://github.com/drbild/sslpsk',
     download_url = 'https://github.com/drbild/sslpsk/archive/0.1.tar.gz',
     keywords = ['ssl', 'tls', 'psk', 'tls-psk', 'preshared key'],

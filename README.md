@@ -11,7 +11,7 @@ package. Simply use
 
 instead of
 
-    ssl.wrap_sock(sock, ...)
+    ssl.wrap_socket(sock, ...)
 
 ## Installation
 

@@ -17,7 +17,10 @@ instead of
 
 ```pip install sslpsk```
 
-You must have `setuptools` installed.
+`pip` builds from source for Linux and Mac OSX, so a C compiler, the Python
+development headers, and the openSSL development headers are required.  For
+Microsoft Windows, pre-built binaries are available so there are no such
+prerequisites.
 
 ## Usage
 

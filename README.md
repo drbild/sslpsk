@@ -161,7 +161,8 @@ def main():
     port = 6000
     client(host, port, PSKS)
 
-main()
+if __name__ == '__main__':
+    main()
 ```
 
 ## Changelog

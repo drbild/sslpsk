@@ -143,9 +143,9 @@ PSKS = {'server1' : 'abcdef',
 
 def client(host, port, psk):
     tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    tcp_sock.connection((host, port))
+    tcp_socket.connect((host, port))
 
-    ssl_sock = sslpsk.wrap_socket(sock,
+    ssl_sock = sslpsk.wrap_socket(tcp_socket,
                                   ssl_version=ssl.PROTOCOL_TLSv1,
 				  psk=lambda hint: (PSKS[hint], 'client1'))
 
@@ -159,8 +159,9 @@ def client(host, port, psk):
 def main():
     host = '127.0.0.1'
     port = 6000
+    client(host, port, PSKS)
 
-def __name__ == '__main__':
+if __name__ == '__main__':
     main()
 ```
 

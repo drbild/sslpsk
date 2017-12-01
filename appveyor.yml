@@ -74,13 +74,6 @@ build_script:
 
 after_build:
   - "appveyor\\build.cmd %PYTHON%\\python.exe setup.py install"
-
-test_script:
-  - cd openssl
-  - "%PYTHON%\\python.exe -m sslpsk.test"
-  - cd ..
-
-after_test:
   - "appveyor\\build.cmd %PYTHON%\\python.exe setup.py bdist"
   - "appveyor\\build.cmd %PYTHON%\\python.exe setup.py bdist_wheel"
 

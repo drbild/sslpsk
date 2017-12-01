@@ -57,7 +57,7 @@ setup(
     ],
     packages = ['sslpsk', 'sslpsk.test'],
     ext_modules = [_sslpsk],
-    data_files = [('sslpsk', LIB_FILES)],
+    package_data = {'sslpsk' : LIB_FILES},
     test_suite = 'sslpsk.test',
     zip_safe = False
 )

@@ -1,3 +1,4 @@
+from __future__ import print_function
 import socket
 import ssl
 import sslpsk
@@ -14,9 +15,10 @@ def client(host, port, psk):
                                   ciphers='ALL:!ADH:!LOW:!EXP:!MD5:@STRENGTH',
                                   psk=lambda hint: (PSKS[hint], 'client1'))
 
-    ssl_sock.sendall("ping")
-    msg = ssl_sock.recv(4)
-    print 'Client received: %s'%(msg)
+    msg = "ping"
+    ssl_sock.sendall(msg.encode())
+    msg = ssl_sock.recv(4).decode()
+    print('Client received: %s'%(msg))
 
     ssl_sock.shutdown(socket.SHUT_RDWR)
     ssl_sock.close()

@@ -15,6 +15,7 @@
 from __future__ import absolute_import
 
 import ssl
+import _ssl
 import sys
 import weakref
 
@@ -51,10 +52,10 @@ def _sslobj(sock):
 
     """
     pass
-    if sys.version_info >= (3, 5):
-        return sock._sslobj._sslobj
-    else:
+    if isinstance(sock._sslobj, _ssl._SSLSocket):
         return sock._sslobj
+    else:
+        return sock._sslobj._sslobj
 
 def _python_psk_server_callback(ssl_id, identity):
     """Called by _sslpsk.c to return the psk for the socket with the specified

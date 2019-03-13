@@ -1,3 +1,4 @@
+from __future__ import print_function
 import socket
 import ssl
 import sslpsk
@@ -19,9 +20,10 @@ def server(host, port):
                                   psk=lambda identity: PSKS[identity],
                                   hint='server1')
 
-    msg = ssl_sock.recv(4)
-    print 'Server received: %s'%(msg)
-    ssl_sock.sendall("pong")
+    msg = ssl_sock.recv(4).decode()
+    print('Server received: %s'%(msg))
+    msg = "pong"
+    ssl_sock.sendall(msg.encode())
 
     ssl_sock.shutdown(socket.SHUT_RDWR)
     ssl_sock.close()

@@ -41,10 +41,10 @@ def _python_psk_client_callback(ssl_id, hint):
 
     """
     if ssl_id not in _callbacks:
-        return ("", "")
+        return (b"", b"")
     else:
         res = _callbacks[ssl_id](hint)
-        return res if isinstance(res, tuple) else (res, "")
+        return res if isinstance(res, tuple) else (res, b"")
 
 def _sslobj(sock):
     """Returns the underlying PySLLSocket object with which the C extension
@@ -63,7 +63,7 @@ def _python_psk_server_callback(ssl_id, identity):
 
     """
     if ssl_id not in _callbacks:
-        return ""
+        return b""
     else:
         return _callbacks[ssl_id](identity)
 
@@ -77,7 +77,7 @@ def _ssl_set_psk_client_callback(sock, psk_cb):
 def _ssl_set_psk_server_callback(sock, psk_cb, hint):
     ssl_id = _sslpsk.sslpsk_set_accept_state(_sslobj(sock))
     _      = _sslpsk.sslpsk_set_psk_server_callback(_sslobj(sock))
-    _      = _sslpsk.sslpsk_use_psk_identity_hint(_sslobj(sock), hint if hint else "")
+    _      = _sslpsk.sslpsk_use_psk_identity_hint(_sslobj(sock), hint if hint else b"")
     _register_callback(sock, ssl_id, psk_cb)
 
 def wrap_socket(*args, **kwargs):
@@ -103,7 +103,7 @@ def wrap_socket(*args, **kwargs):
             cb = psk if callable(psk) else lambda _identity: psk
             _ssl_set_psk_server_callback(sock, cb, hint)
         else:
-            cb = psk if callable(psk) else lambda _hint: psk if isinstance(psk, tuple) else (psk, "")
+            cb = psk if callable(psk) else lambda _hint: psk if isinstance(psk, tuple) else (psk, b"")
             _ssl_set_psk_client_callback(sock, cb)
 
     if do_handshake_on_connect:

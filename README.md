@@ -7,7 +7,7 @@
 This module adds TLS-PSK support to the Python 2.7 and 3.x `ssl`
 package. Simply use
 
-    sslpsk.wrap_socket(sock, psk="...", ...)
+    sslpsk.wrap_socket(sock, psk=b'...', ...)
 
 instead of
 
@@ -36,20 +36,20 @@ For client connections, `psk` can be one of four things:
 1. Just the preshared key.
 
 ```python
-sslpsk.wrap_socket(sock, psk='mypsk')
+sslpsk.wrap_socket(sock, psk=b'mypsk')
 ```
 
 2. A tuple of the preshared key and client identity.
 
 ```python
-sslpsk.wrap_socket(sock, psk=('mypsk', 'myidentity'))
+sslpsk.wrap_socket(sock, psk=(b'mypsk', b'myidentity'))
 ```
 
 3. A function mapping the server identity hint to the preshared key.
 
 ```python
-PSK_FOR = {'server1' : 'abcdef',
-           'server2' : '123456'}
+PSK_FOR = {b'server1' : b'abcdef',
+           b'server2' : b'123456'}
 
 sslpsk.wrap_socket(sock, psk=lambda hint: PSK_FOR[hint])
 ```
@@ -58,11 +58,11 @@ sslpsk.wrap_socket(sock, psk=lambda hint: PSK_FOR[hint])
 and client identity.
 
 ```python
-PSK_FOR = {'server1' : 'abcdef',
-           'server2' : '123456'}
+PSK_FOR = {b'server1' : b'abcdef',
+           b'server2' : b'123456'}
 
-ID_FOR  = {'server1' : 'clientA',
-           'server2' : 'clientB'}
+ID_FOR  = {b'server1' : b'clientA',
+           b'server2' : b'clientB'}
 
 sslpsk.wrap_socket(sock, psk=lambda hint: (PSK_FOR[hint], ID_FOR[hint]))
 ```
@@ -72,14 +72,14 @@ For server connections, `psk` can be one of two things:
 1. Just the preshared key.
 
 ```python
-sslpsk.wrap_socket(sock, server_side=True, psk='mypsk')
+sslpsk.wrap_socket(sock, server_side=True, psk=b'mypsk')
 ```
 
 2. A function mapping the client identity to the preshared key.
 
 ```python
-PSK_FOR = {'clientA' : 'abcdef',
-           'clientB' : '123456'}
+PSK_FOR = {b'clientA' : b'abcdef',
+           b'clientB' : b'123456'}
 
 sslpsk.wrap_socket(sock, server_side=True, psk=lambda identity: PSK_FOR[identity])
 ```
@@ -88,7 +88,7 @@ Additionally for server connections, the optional server identity hint is
 specified using the  `hint` argument.
 
 ```python
-sslpsk.wrap_socket(sock, server_side=True, hint='myidentity', psk='mypsk')
+sslpsk.wrap_socket(sock, server_side=True, hint=b'myidentity', psk=b'mypsk')
 ```
 
 If `hint` is not specified, `None`, or the empty string, the identity hint
@@ -117,7 +117,7 @@ def server(host, port):
                                   ssl_version=ssl.PROTOCOL_TLSv1,
                                   ciphers='ALL:!ADH:!LOW:!EXP:!MD5:@STRENGTH',
                                   psk=lambda identity: PSKS[identity],
-                                  hint='server1')
+                                  hint=b'server1')
 
     msg = ssl_sock.recv(4).decode()
     print('Server received: %s'%(msg))
@@ -144,8 +144,8 @@ import socket
 import ssl
 import sslpsk
 
-PSKS = {'server1' : 'abcdef',
-        'server2' : 'uvwxyz'}
+PSKS = {b'server1' : b'abcdef',
+        b'server2' : b'uvwxyz'}
 
 def client(host, port, psk):
     tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -154,7 +154,7 @@ def client(host, port, psk):
     ssl_sock = sslpsk.wrap_socket(tcp_socket,
                                   ssl_version=ssl.PROTOCOL_TLSv1,
                                   ciphers='ALL:!ADH:!LOW:!EXP:!MD5:@STRENGTH',
-                                  psk=lambda hint: (PSKS[hint], 'client1'))
+                                  psk=lambda hint: (PSKS[hint], b'client1'))
 
     msg = "ping"
     ssl_sock.sendall(msg.encode())

@@ -16,7 +16,7 @@ from setuptools import setup, Extension
 
 import os, shutil, sys
 
-if sys.platform == 'win32':
+if sys.platform == 'win32' and sys.version_info < (3,7):
     LIB_NAMES = ['ssleay32MD', 'libeay32MD']
 else:
     LIB_NAMES = ['ssl']
@@ -28,7 +28,7 @@ _sslpsk = Extension('sslpsk._sslpsk',
 
 try:
     # Symlink the libs so they can be included in the package data
-    if sys.platform == 'win32':
+    if sys.platform == 'win32' and sys.version_info < (3,7):
         for lib in LIB_NAMES:
             shutil.copy2('openssl/bin/%s.dll'%lib, 'sslpsk/')
 
@@ -67,6 +67,6 @@ try:
     )
 
 finally:
-    if sys.platform == 'win32':
+    if sys.platform == 'win32' and sys.version_info < (3,7):
         for lib in LIB_NAMES:
             os.remove('sslpsk/%s.dll'%lib)

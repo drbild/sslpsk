@@ -24,7 +24,7 @@
 #endif
 
 #define PY_VERSION_BETWEEN(start, end) ((PY_VERSION_HEX >= start) && \
-					(PY_VERSION_HEX < end))
+                                        (PY_VERSION_HEX < end))
 
 typedef struct {
     PyObject_HEAD
@@ -69,12 +69,12 @@ PyObject* sslpsk_set_python_psk_client_callback(PyObject* self, PyObject* args)
 {
     PyObject* cb;
     if (!PyArg_ParseTuple(args, "O", &cb)) {
-	return NULL;
+        return NULL;
     }
     Py_XINCREF(cb);
     Py_XDECREF(python_psk_client_callback);
     python_psk_client_callback = cb;
-   
+
     Py_RETURN_NONE;
 }
 
@@ -85,12 +85,12 @@ PyObject* sslpsk_set_python_psk_server_callback(PyObject* self, PyObject* args)
 {
     PyObject* cb;
     if (!PyArg_ParseTuple(args, "O", &cb)) {
-	return NULL;
+        return NULL;
     }
     Py_XINCREF(cb);
     Py_XDECREF(python_psk_server_callback);
     python_psk_server_callback = cb;
-   
+
     Py_RETURN_NONE;
 }
 
@@ -98,11 +98,11 @@ PyObject* sslpsk_set_python_psk_server_callback(PyObject* self, PyObject* args)
  * Client callback for openSSL. Delegates to python_psk_client_callback.
  */
 static unsigned int sslpsk_psk_client_callback(SSL* ssl,
-					    const char* hint,
-					    char* identity,
-					    unsigned int max_identity_len,
-					    unsigned char* psk,
-					    unsigned int max_psk_len)
+                                               const char* hint,
+                                               char* identity,
+                                               unsigned int max_identity_len,
+                                               unsigned char* psk,
+                                               unsigned int max_psk_len)
 {
     int ret = 0;
 
@@ -115,33 +115,33 @@ static unsigned int sslpsk_psk_client_callback(SSL* ssl,
 
     Py_ssize_t psk_len_;
     Py_ssize_t identity_len_;
-    
+
     gstate = PyGILState_Ensure();
 
     if (python_psk_client_callback == NULL) {
-	goto release;
+        goto release;
     }
 
     // Call python callback
     result = PyObject_CallFunction(python_psk_client_callback, "ls", ssl_id(ssl), hint);
     if (result == NULL) {
-	goto release;
+        goto release;
     }
 
     // Parse result
-    
+
     if (!PyArg_Parse(result, "(s#s#)", &psk_, &psk_len_, &identity_, &identity_len_)) {
-	goto decref;
+        goto decref;
     }
 
     // Copy to caller
     if (psk_len_ > max_psk_len) {
-	goto decref;
+        goto decref;
     }
     memcpy(psk, psk_, psk_len_);
 
     if (identity_len_ + 1 > max_identity_len) {
-	goto decref;
+        goto decref;
     }
     memcpy(identity, identity_, identity_len_);
     identity[identity_len_] = 0;
@@ -153,7 +153,7 @@ static unsigned int sslpsk_psk_client_callback(SSL* ssl,
 
  release:
     PyGILState_Release(gstate);
-    
+
     return ret;
 }
 
@@ -161,9 +161,9 @@ static unsigned int sslpsk_psk_client_callback(SSL* ssl,
  * Server callback for openSSL. Delegates to python_psk_server_callback.
  */
 static unsigned int sslpsk_psk_server_callback(SSL* ssl,
-					    const char* identity,
-					    unsigned char* psk,
-					    unsigned int max_psk_len)
+                                               const char* identity,
+                                               unsigned char* psk,
+                                               unsigned int max_psk_len)
 {
     int ret = 0;
 
@@ -177,28 +177,28 @@ static unsigned int sslpsk_psk_server_callback(SSL* ssl,
     gstate = PyGILState_Ensure();
 
     if (python_psk_server_callback == NULL) {
-	goto release;
+        goto release;
     }
 
     // Call python callback
     result = PyObject_CallFunction(python_psk_server_callback, "ls", ssl_id(ssl), identity);
     if (result == NULL) {
-	goto release;
+        goto release;
     }
 
     // Parse result
     if (!PyArg_Parse(result, "s#", &psk_, &psk_len_)) {
-	goto decref;
+        goto decref;
     }
 
     // Copy to caller
     if (psk_len_ > max_psk_len) {
-	goto decref;
+        goto decref;
     }
     memcpy(psk, psk_, psk_len_);
 
     ret = psk_len_;
-    
+
  decref:
     Py_DECREF(result);
 
@@ -215,7 +215,7 @@ PyObject* sslpsk_set_psk_client_callback(PyObject* self, PyObject* args)
 {
     PyObject* socket;
     SSL* ssl;
-    
+
     if (!PyArg_ParseTuple(args, "O", &socket))
     {
         return NULL;
@@ -324,7 +324,7 @@ void init_sslpsk(void)
 
     if (m == NULL) {
 #if PY_MAJOR_VERSION >= 3
-	return NULL;
+        return NULL;
 #else
         return ;
 #endif

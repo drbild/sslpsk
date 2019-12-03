@@ -44,7 +44,7 @@ environment:
 
     - PYTHON: "C:\\Python37-x64"
       PYTHON_ARCH: "64"
-      OPENSSL_LIB: "openssl-1.0.2k-vs2015"
+      OPENSSL_LIB: "openssl-1.1.0f-vs2017"
 
 install:
   - "%PYTHON%\\python.exe -m pip install wheel"

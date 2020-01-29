@@ -27,7 +27,7 @@ TEST_DATA=b'abcdefghi'
 class SSLPSKTest(unittest.TestCase):
     # ---------- setup/tear down functions
     def setUp(self):
-        self.psk = 'c033f52671c61c8128f7f8a40be88038bcf2b07a6eb3095c36e3759f0cf40837'
+        self.psk = b'c033f52671c61c8128f7f8a40be88038bcf2b07a6eb3095c36e3759f0cf40837'
         self.addr = (HOST, PORT)
         self.client_socket = socket.socket()
         self.server_socket = None

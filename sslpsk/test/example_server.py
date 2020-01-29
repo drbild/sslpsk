@@ -3,8 +3,8 @@ import socket
 import ssl
 import sslpsk
 
-PSKS = {'client1' : 'abcdef',
-        'client2' : '123456'}
+PSKS = {'client1' : b'abcdef',
+        'client2' : b'123456'}
 
 def server(host, port):
     tcp_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -18,7 +18,7 @@ def server(host, port):
                                   ssl_version=ssl.PROTOCOL_TLSv1,
                                   ciphers='ALL:!ADH:!LOW:!EXP:!MD5:@STRENGTH',
                                   psk=lambda identity: PSKS[identity],
-                                  hint='server1')
+                                  hint=b'server1')
 
     msg = ssl_sock.recv(4).decode()
     print('Server received: %s'%(msg))

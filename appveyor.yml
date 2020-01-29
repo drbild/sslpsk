@@ -1,46 +1,8 @@
 environment:
   matrix:
-    - PYTHON: "C:\\Python27"
-      PYTHON_ARCH: "32"
-      OPENSSL_LIB: "openssl-1.0.2k-vs2008"
-
-    - PYTHON: "C:\\Python33"
-      PYTHON_ARCH: "32"
-      OPENSSL_LIB: "openssl-1.0.2k-vs2010"
-
-    - PYTHON: "C:\\Python34"
-      PYTHON_ARCH: "32"
-      OPENSSL_LIB: "openssl-1.0.2k-vs2010"
-
-    - PYTHON: "C:\\Python35"
-      PYTHON_ARCH: "32"
-      OPENSSL_LIB: "openssl-1.0.2k-vs2015"
-
-    - PYTHON: "C:\\Python36"
-      PYTHON_ARCH: "32"
-      OPENSSL_LIB: "openssl-1.0.2k-vs2015"
-
-    - PYTHON: "C:\\Python27-x64"
+    - PYTHON: "C:\\Python37-x64"
       PYTHON_ARCH: "64"
-      OPENSSL_LIB: "openssl-1.0.2k-vs2008"
-
-    - PYTHON: "C:\\Python33-x64"
-      PYTHON_ARCH: "64"
-      OPENSSL_LIB: "openssl-1.0.2k-vs2010"
-      DISTUTILS_USE_SDK: "1"
-
-    - PYTHON: "C:\\Python34-x64"
-      PYTHON_ARCH: "64"
-      OPENSSL_LIB: "openssl-1.0.2k-vs2010"
-      DISTUTILS_USE_SDK: "1"
-
-    - PYTHON: "C:\\Python35-x64"
-      PYTHON_ARCH: "64"
-      OPENSSL_LIB: "openssl-1.0.2k-vs2015"
-
-    - PYTHON: "C:\\Python36-x64"
-      PYTHON_ARCH: "64"
-      OPENSSL_LIB: "openssl-1.0.2k-vs2015"
+      OPENSSL_LIB: "openssl-1.1.0f-vs2017"
 
 install:
   - "%PYTHON%\\python.exe -m pip install wheel"

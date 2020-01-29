@@ -16,7 +16,7 @@ from setuptools import setup, Extension
 
 import os, shutil, sys
 
-BUNDLE_SSL = sys.platform == 'win32' and sys.version_info < (3,7):
+BUNDLE_SSL = sys.platform == 'win32' and sys.version_info < (3,7)
 
 if BUNDLE_SSL:
     LIB_NAMES = ['ssleay32MD', 'libeay32MD']

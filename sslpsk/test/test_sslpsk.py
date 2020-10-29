@@ -72,7 +72,7 @@ class SSLPSKTest(unittest.TestCase):
             self.server_thread.join()
             self.server_thread = None
 
-    def startServer(self, ssl_version=ssl.PROTOCOL_TLSv1, ciphers=CIPHERS, myid=None):
+    def startServer(self, ssl_version=ssl.PROTOCOL_TLSv1_2, ciphers=CIPHERS, myid=None):
         self.accept_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.accept_socket.bind(self.addr)
         self.accept_socket.listen(1)
@@ -115,7 +115,7 @@ class SSLPSKTest(unittest.TestCase):
         self.server_thread.start()
 
     def connectAndReceiveData(
-        self, ssl_version=ssl.PROTOCOL_TLSv1, ciphers=CIPHERS, myid=None
+        self, ssl_version=ssl.PROTOCOL_TLSv1_2, ciphers=CIPHERS, myid=None
     ):
         # initialize
         self.client_socket.connect(self.addr)
@@ -136,13 +136,13 @@ class SSLPSKTest(unittest.TestCase):
 
     def testClientCiphersPskAes256(self):
         ciphers = "PSK-AES256-CBC-SHA"
-        ssl_version = ssl.PROTOCOL_TLSv1
+        ssl_version = ssl.PROTOCOL_TLSv1_2
         self.startServer(ssl_version, ciphers)
         self.connectAndReceiveData(ssl_version, ciphers)
 
     def testCiphersAll(self):
         ciphers = "ALL:!ADH:!LOW:!EXP:!MD5:@STRENGTH"
-        ssl_version = ssl.PROTOCOL_TLSv1
+        ssl_version = ssl.PROTOCOL_TLSv1_2
         self.startServer(ssl_version, ciphers)
         self.connectAndReceiveData(ssl_version, ciphers)
 
@@ -170,6 +170,40 @@ class SSLPSKTest(unittest.TestCase):
     def testProtocolClientTlsV1_2ServerTls(self):
         self.startServer(ssl_version=ssl.PROTOCOL_TLS)
         self.connectAndReceiveData(ssl_version=ssl.PROTOCOL_TLSv1_2)
+
+    def testIdentity(self):
+        identity = b"id1"
+        psks = {b"id1": b"abcdef", b"id2": b"123456"}
+        self.server_psk = lambda identity: psks.get(identity)
+        self.client_psk = (b"abcdef", b"id1")
+
+        self.startServer(myid=identity)
+        self.connectAndReceiveData(myid=identity)
+
+    def testClientIdentity(self):
+        psks = {b"client1": b"abcdef", b"client2": b"123456"}
+        self.server_psk = lambda identity: psks.get(identity)
+        self.client_psk = (b"abcdef", b"client1")
+
+        self.startServer(myid=b"server1")
+        self.connectAndReceiveData(myid=b"client1")
+
+    def testClientAndServerIdentities(self):
+        psks_on_server = {b"client1": b"abcdef", b"client2": b"123456"}
+        self.server_psk = lambda identity: psks_on_server.get(identity)
+
+        id_on_server = {b"server1": b"client1", b"server2": b"client2"}
+
+        psks_on_client = {b"server1": b"abcdef", b"server2": b"123456"}
+
+        self.client_psk = lambda hint: (
+            psks_on_client.get(hint),
+            id_on_server.get(hint),
+        )
+
+        self.startServer(myid=b"server1")
+        self.connectAndReceiveData()
+
 
 
 def main():

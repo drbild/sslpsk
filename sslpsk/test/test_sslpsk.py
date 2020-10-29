@@ -204,6 +204,24 @@ class SSLPSKTest(unittest.TestCase):
         self.startServer(myid=b"server1")
         self.connectAndReceiveData()
 
+    def testBareosIdentity(self):
+        def getBareosIdentity(name):
+            identity_prefix = b"R_CONSOLE"
+            record_separator = bytes.fromhex("1E")
+
+            result = identity_prefix + record_separator + name
+
+            return bytes(result)
+
+        clientid = getBareosIdentity(b"client1")
+
+        psks = {b"client1": b"abcdef", b"client2": b"123456", clientid: b"secret"}
+        self.server_psk = lambda identity: psks.get(identity)
+        self.client_psk = (b"secret", clientid)
+
+        self.startServer()
+        self.connectAndReceiveData()
+
 
 
 def main():

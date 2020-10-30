@@ -3,8 +3,10 @@ import socket
 import ssl
 import sslpsk
 
-PSKS = {'client1' : b'abcdef',
-        'client2' : b'123456'}
+PSKS = {
+        b'client1' : b'abcdef',
+        b'client2' : b'123456',
+    }
 
 def server(host, port):
     tcp_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

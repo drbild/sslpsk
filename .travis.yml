@@ -13,7 +13,9 @@ matrix:
     - os: linux
       python: 3.6
     - os: linux
-      python: 3.7-dev
+      python: 3.7
+    - os: linux
+      python: 3.8
     - os: osx
       language: generic
       env: PYTHON_BIN=python2
@@ -21,4 +23,5 @@ matrix:
 script:
   - $PYTHON_BIN setup.py install
   - cd ..
-  - $PYTHON_BIN -m sslpsk.test
+  - # $PYTHON_BIN -m sslpsk.test
+  - $PYTHON_BIN sslpsk/sslpsk/test/test_sslpsk.py -v -b

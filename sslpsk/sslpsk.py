@@ -86,11 +86,8 @@ def wrap_socket(*args, **kwargs):
     do_handshake_on_connect = kwargs.get('do_handshake_on_connect', True)
     kwargs['do_handshake_on_connect'] = False
     
-    psk = kwargs.setdefault('psk', None)
-    del kwargs['psk']
-
-    hint = kwargs.setdefault('hint', None)
-    del kwargs['hint']
+    psk = kwargs.pop('psk', None)
+    hint = kwargs.pop('hint', None)
 
     server_side = kwargs.setdefault('server_side', False)
     if psk:

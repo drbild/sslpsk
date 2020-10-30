@@ -12,6 +12,8 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License
 
+import sys
 import sslpsk.test
 
-sslpsk.test.run()
+result = sslpsk.test.run()
+sys.exit(not result.wasSuccessful())

@@ -27,10 +27,20 @@ import warnings
 
 HOST = "localhost"
 PORT = 6000
-TEST_DATA = b"abcdefghi"
 CIPHERS = "ALL:!ADH:!LOW:!EXP:!MD5:@STRENGTH"
+TEST_DATA = b"abcdefghi"
 TIMEOUT = 3
 
+TLS_PROTOCOL = None
+if hasattr(ssl, "PROTOCOL_TLS"):
+    TLS_PROTOCOL = ssl.PROTOCOL_TLS
+else:
+    TLS_PROTOCOL = ssl.PROTOCOL_SSLv23
+if os.environ.get("TRAVIS_OS_NAME") == "osx":
+    # the travis Mac osx environment is known to fail
+    # with protocol ssl.PROTOCOL_TLS.
+    # Therefore we choose ssl.PROTOCOL_TLSv1_2
+    TLS_PROTOCOL = ssl.PROTOCOL_TLSv1_2
 
 def cmd_exists(cmd):
     return any(
@@ -97,7 +107,7 @@ class SslPskBase(unittest.TestCase):
             self.proc.terminate()
             self.proc = None
 
-    def startServer(self, ssl_version=ssl.PROTOCOL_TLSv1_2, ciphers=CIPHERS, myid=None):
+    def startServer(self, ssl_version=TLS_PROTOCOL, ciphers=CIPHERS, myid=None):
         self.accept_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.accept_socket.bind(self.addr)
         self.accept_socket.listen(1)
@@ -151,7 +161,7 @@ class SslPskBase(unittest.TestCase):
         self.server_thread.start()
 
     def connectAndReceiveData(
-        self, ssl_version=ssl.PROTOCOL_TLSv1_2, ciphers=CIPHERS, myid=None
+        self, ssl_version=TLS_PROTOCOL, ciphers=CIPHERS, myid=None
     ):
         # initialize
         self.client_socket.connect(self.addr)
@@ -178,15 +188,13 @@ class SslPskTest(SslPskBase):
 
     def testCiphersPskAes256(self):
         ciphers = "PSK-AES256-CBC-SHA"
-        ssl_version = ssl.PROTOCOL_TLSv1_2
-        self.startServer(ssl_version, ciphers)
-        self.connectAndReceiveData(ssl_version, ciphers)
+        self.startServer(ciphers=ciphers)
+        self.connectAndReceiveData(ciphers=ciphers)
 
     def testCiphersAll(self):
         ciphers = "ALL:!ADH:!LOW:!EXP:!MD5:@STRENGTH"
-        ssl_version = ssl.PROTOCOL_TLSv1_2
-        self.startServer(ssl_version, ciphers)
-        self.connectAndReceiveData(ssl_version, ciphers)
+        self.startServer(ciphers=ciphers)
+        self.connectAndReceiveData(ciphers=ciphers)
 
     @unittest.skipUnless(
         hasattr(ssl, "PROTOCOL_TLS"), "ssl module does not provide required protocol"
@@ -199,16 +207,25 @@ class SslPskTest(SslPskBase):
         self.startServer(ssl_version=ssl_version)
         self.connectAndReceiveData(ssl_version=ssl_version)
 
+    @unittest.skipUnless(
+        hasattr(ssl, "PROTOCOL_TLSv1"), "ssl module does not provide required protocol"
+    )
     def testProtocolTlsV1(self):
         ssl_version = ssl.PROTOCOL_TLSv1
         self.startServer(ssl_version=ssl_version)
         self.connectAndReceiveData(ssl_version=ssl_version)
 
+    @unittest.skipUnless(
+        hasattr(ssl, "PROTOCOL_TLSv1_1"), "ssl module does not provide required protocol"
+    )
     def testProtocolTlsV1_1(self):
         ssl_version = ssl.PROTOCOL_TLSv1_1
         self.startServer(ssl_version=ssl_version)
         self.connectAndReceiveData(ssl_version=ssl_version)
 
+    @unittest.skipUnless(
+        hasattr(ssl, "PROTOCOL_TLSv1_2"), "ssl module does not provide required protocol"
+    )
     def testProtocolTlsV1_2(self):
         ssl_version = ssl.PROTOCOL_TLSv1_2
         self.startServer(ssl_version=ssl_version)
@@ -216,6 +233,9 @@ class SslPskTest(SslPskBase):
 
     @unittest.skipUnless(
         hasattr(ssl, "PROTOCOL_TLS"), "ssl module does not provide required protocol"
+    )
+    @unittest.skipUnless(
+        hasattr(ssl, "PROTOCOL_TLSv1_2"), "ssl module does not provide required protocol"
     )
     def testProtocolClientTlsV1_2ServerTls(self):
         self.startServer(ssl_version=ssl.PROTOCOL_TLS)
@@ -322,12 +342,21 @@ class SslPskServerTest(SslPskBase):
     def testProtocolTls(self):
         self.connectOpenSslClientWithSslPskServer(ssl_version=ssl.PROTOCOL_TLS)
 
+    @unittest.skipUnless(
+        hasattr(ssl, "PROTOCOL_TLSv1"), "ssl module does not provide required protocol"
+    )
     def testProtocolTlsV1(self):
         self.connectOpenSslClientWithSslPskServer(ssl_version=ssl.PROTOCOL_TLSv1)
 
+    @unittest.skipUnless(
+        hasattr(ssl, "PROTOCOL_TLSv1_1"), "ssl module does not provide required protocol"
+    )
     def testProtocolTlsV1_1(self):
         self.connectOpenSslClientWithSslPskServer(ssl_version=ssl.PROTOCOL_TLSv1_1)
 
+    @unittest.skipUnless(
+        hasattr(ssl, "PROTOCOL_TLSv1_2"), "ssl module does not provide required protocol"
+    )
     def testProtocolTlsV1_2(self):
         self.connectOpenSslClientWithSslPskServer(ssl_version=ssl.PROTOCOL_TLSv1_2)
 
@@ -419,12 +448,21 @@ class SslPskClientTest(SslPskBase):
     def testProtocolTls(self):
         self.connectSshPskClientWithOpenSslServer(ssl_version=ssl.PROTOCOL_TLS)
 
+    @unittest.skipUnless(
+        hasattr(ssl, "PROTOCOL_TLSv1"), "ssl module does not provide required protocol"
+    )
     def testProtocolTlsV1(self):
         self.connectSshPskClientWithOpenSslServer(ssl_version=ssl.PROTOCOL_TLSv1)
 
+    @unittest.skipUnless(
+        hasattr(ssl, "PROTOCOL_TLSv1_1"), "ssl module does not provide required protocol"
+    )
     def testProtocolTlsV1_1(self):
         self.connectSshPskClientWithOpenSslServer(ssl_version=ssl.PROTOCOL_TLSv1_1)
 
+    @unittest.skipUnless(
+        hasattr(ssl, "PROTOCOL_TLSv1_2"), "ssl module does not provide required protocol"
+    )
     def testProtocolTlsV1_2(self):
         self.connectSshPskClientWithOpenSslServer(ssl_version=ssl.PROTOCOL_TLSv1_2)
 

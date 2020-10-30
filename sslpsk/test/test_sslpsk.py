@@ -197,6 +197,18 @@ class SslPskTest(SslPskBase):
         self.connectAndReceiveData(ciphers=ciphers)
 
     @unittest.skipUnless(
+        hasattr(ssl, "PROTOCOL_SSLv23"), "ssl module does not provide required protocol"
+    )
+    @unittest.skipIf(
+        os.environ.get("TRAVIS_OS_NAME") == "osx", "Mac OS is known to fail"
+    )
+    def testProtocolSslV23(self):
+        ssl_version = ssl.PROTOCOL_SSLv23
+        self.startServer(ssl_version=ssl_version)
+        self.connectAndReceiveData(ssl_version=ssl_version)
+
+
+    @unittest.skipUnless(
         hasattr(ssl, "PROTOCOL_TLS"), "ssl module does not provide required protocol"
     )
     @unittest.skipIf(

@@ -34,7 +34,7 @@ try:
 
     setup(
         name = 'sslpsk',
-        version = '1.0.0',
+        version = '1.1.0',
         description = 'Adds TLS-PSK support to the Python ssl package',
         author = 'David R. Bild',
         author_email = 'david@davidbild.org',

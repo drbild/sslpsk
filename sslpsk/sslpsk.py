@@ -88,33 +88,67 @@ def _ssl_set_psk_server_callback(sock, psk_cb, hint):
     _ = _sslpsk.sslpsk_use_psk_identity_hint(_sslobj(sock), hint if hint else b"")
     _register_callback(sock, ssl_id, psk_cb)
 
-def wrap_socket(*args, **kwargs):
-    """
-    """
-    do_handshake_on_connect = kwargs.get('do_handshake_on_connect', True)
-    kwargs['do_handshake_on_connect'] = False
-    
-    psk = kwargs.setdefault('psk', None)
-    del kwargs['psk']
 
-    hint = kwargs.setdefault('hint', None)
-    del kwargs['hint']
-
-    server_side = kwargs.setdefault('server_side', False)
+def _ssl_setup_psk_callbacks(sslobj):
+    psk = sslobj.context.psk
+    hint = sslobj.context.hint
     if psk:
-        del kwargs['server_side'] # bypass need for cert
-    
-    sock = ssl.wrap_socket(*args, **kwargs)
-
-    if psk:
-        if server_side:
+        if sslobj.server_side:
             cb = psk if callable(psk) else lambda _identity: psk
-            _ssl_set_psk_server_callback(sock, cb, hint)
+            _ssl_set_psk_server_callback(sslobj, cb, hint)
         else:
             cb = psk if callable(psk) else lambda _hint: psk if isinstance(psk, tuple) else (psk, b"")
-            _ssl_set_psk_client_callback(sock, cb)
+            _ssl_set_psk_client_callback(sslobj, cb)
 
-    if do_handshake_on_connect:
-        sock.do_handshake()
 
-    return sock
+class SSLPSKContext(ssl.SSLContext):
+    @property
+    def psk(self):
+        return getattr(self, "_psk", None)
+
+    @psk.setter
+    def psk(self, psk):
+        self._psk = psk
+
+    @property
+    def hint(self):
+        return getattr(self, "_hint", None)
+
+    @hint.setter
+    def hint(self, hint):
+        self._hint = hint
+
+
+class SSLPSKObject(ssl.SSLObject):
+    def do_handshake(self, *args, **kwargs):
+        _ssl_setup_psk_callbacks(self)
+        super().do_handshake(*args, **kwargs)
+
+
+class SSLPSKSocket(ssl.SSLSocket):
+    def do_handshake(self, *args, **kwargs):
+        _ssl_setup_psk_callbacks(self)
+        super().do_handshake(*args, **kwargs)
+
+
+SSLPSKContext.sslobject_class = SSLPSKObject
+SSLPSKContext.sslsocket_class = SSLPSKSocket
+
+
+def wrap_socket(sock, psk, hint=None,
+                server_side=False,
+                ssl_version=ssl.PROTOCOL_TLS,
+                do_handshake_on_connect=True,
+                suppress_ragged_eofs=True,
+                ciphers=None):
+    context = SSLPSKContext(ssl_version)
+    if ciphers:
+        context.set_ciphers(ciphers)
+    context.psk = psk
+    context.hint = hint
+
+    return context.wrap_socket(
+        sock=sock, server_side=server_side,
+        do_handshake_on_connect=do_handshake_on_connect,
+        suppress_ragged_eofs=suppress_ragged_eofs
+    )

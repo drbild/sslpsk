@@ -14,26 +14,29 @@
 
 from __future__ import absolute_import
 
-import ssl
 import _ssl
-import sys
+import ssl
 import weakref
 
 from sslpsk import _sslpsk
 
 _callbacks = {}
 
+
 class FinalizerRef(weakref.ref):
     """subclass weakref.ref so that attributes can be added"""
     pass
+
 
 def _register_callback(sock, ssl_id, callback):
     _callbacks[ssl_id] = callback
     callback.unregister = FinalizerRef(sock, _unregister_callback)
     callback.unregister.ssl_id = ssl_id
 
+
 def _unregister_callback(ref):
     del _callbacks[ref.ssl_id]
+
 
 def _python_psk_client_callback(ssl_id, hint):
     """Called by _sslpsk.c to return the (psk, identity) tuple for the socket with
@@ -46,6 +49,7 @@ def _python_psk_client_callback(ssl_id, hint):
         res = _callbacks[ssl_id](hint)
         return res if isinstance(res, tuple) else (res, b"")
 
+
 def _sslobj(sock):
     """Returns the underlying PySLLSocket object with which the C extension
     functions interface.
@@ -57,6 +61,7 @@ def _sslobj(sock):
     else:
         return sock._sslobj._sslobj
 
+
 def _python_psk_server_callback(ssl_id, identity):
     """Called by _sslpsk.c to return the psk for the socket with the specified
     ssl socket.
@@ -67,17 +72,20 @@ def _python_psk_server_callback(ssl_id, identity):
     else:
         return _callbacks[ssl_id](identity)
 
+
 _sslpsk.sslpsk_set_python_psk_client_callback(_python_psk_client_callback)
 _sslpsk.sslpsk_set_python_psk_server_callback(_python_psk_server_callback)
-    
+
+
 def _ssl_set_psk_client_callback(sock, psk_cb):
     ssl_id = _sslpsk.sslpsk_set_psk_client_callback(_sslobj(sock))
     _register_callback(sock, ssl_id, psk_cb)
 
+
 def _ssl_set_psk_server_callback(sock, psk_cb, hint):
     ssl_id = _sslpsk.sslpsk_set_accept_state(_sslobj(sock))
-    _      = _sslpsk.sslpsk_set_psk_server_callback(_sslobj(sock))
-    _      = _sslpsk.sslpsk_use_psk_identity_hint(_sslobj(sock), hint if hint else b"")
+    _ = _sslpsk.sslpsk_set_psk_server_callback(_sslobj(sock))
+    _ = _sslpsk.sslpsk_use_psk_identity_hint(_sslobj(sock), hint if hint else b"")
     _register_callback(sock, ssl_id, psk_cb)
 
 def wrap_socket(*args, **kwargs):
